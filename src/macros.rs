@@ -1,6 +1,19 @@
 macro_rules! enum_matcher_array {
     (
         $( #[$meta:meta] )*
+        $vis:vis const $arrayname:ident = {
+            $( $variant:ident => $rhs:expr, )+
+        }
+    ) => {
+        enum_matcher_array!(
+            $( #[$meta] )*
+            $vis const $arrayname: [Self; Self::COUNT] = {
+                $( Self::$variant => $rhs, )+
+            }
+        );
+    };
+    (
+        $( #[$meta:meta] )*
         $vis:vis const $arrayname:ident: $arrayty:ty = {
             $( $variant:ident => $rhs:expr, )+
         }
@@ -8,7 +21,6 @@ macro_rules! enum_matcher_array {
         enum_matcher_array!(
             $( #[$meta] )*
             $vis const $arrayname: [$arrayty; Self::COUNT] = {
-                @selections Self::VARIANT_ARRAY;
                 $( Self::$variant => $rhs, )+
             }
         );
@@ -16,17 +28,16 @@ macro_rules! enum_matcher_array {
     (
         $( #[$meta:meta] )*
         $vis:vis const $arrayname:ident: [$arrayty:ty; $len:expr] = {
-            @selections $selections:expr;
             $( $matches:pat => $rhs:expr, )+
         }
     ) => {
         $( #[$meta] )*
         $vis const $arrayname: [$arrayty; $len] = {
-            let mut out = [$selections[0]; _];
+            let mut out = [$( $rhs ),+];
             let mut i = 0;
 
             while i != out.len() {
-                out[i] = match $selections[i] {
+                out[i] = match Self::from_repr(i as _) {
                     $( $matches => $rhs, )+
                 };
                 i += 1;
@@ -172,11 +183,13 @@ macro_rules! enum_ordered_array {
             /// # Panics
             /// This function will panic if `n` is out of range.
             #[inline(always)]
+            #[must_use]
             pub const fn from_repr(n: u8) -> Self {
                 Self::VARIANT_ARRAY[n as usize]
             }
             /// Get the `Direction` corresponding to the input, or `None` if the input is out of range.
             #[inline]
+            #[must_use]
             pub const fn try_from_repr(n: u8) -> Option<Self> {
                 const MAX_NUMERIC: u8 = $enum::VARIANT_ARRAY[$enum::VARIANT_ARRAY.len() - 1] as _;
                 if n > MAX_NUMERIC {
@@ -188,6 +201,7 @@ macro_rules! enum_ordered_array {
 
             /// Get the variant as a static string slice
             #[inline(always)]
+            #[must_use]
             pub const fn to_str(self) -> &'static str {
                 Self::VARIANT_NAMES[self as usize]
             }

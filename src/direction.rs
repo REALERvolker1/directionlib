@@ -28,7 +28,7 @@ enum_ordered_array! {
 impl Direction {
     enum_matcher_array! {
         /// An array of variants, each corresponding to its own "opposite", or "reverse".
-        pub const VARIANTS_OPPOSITE: Self = {
+        pub const VARIANTS_OPPOSITE = {
             Back => Self::Front,
             Front => Self::Back,
             Left => Self::Right,

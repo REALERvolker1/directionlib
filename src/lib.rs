@@ -1,12 +1,11 @@
 #![no_std]
 
-mod axis_flags;
+mod axis;
 mod direction;
 mod direction_flags;
 mod indexing;
 mod macros;
-mod axis;
 
+pub use axis::{Axis, SignedAxis};
 pub use direction::Direction;
 pub use direction_flags::{DirectionFlags, DirectionFlagsIter};
-pub use axis::SignedAxis;

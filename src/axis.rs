@@ -1,10 +1,30 @@
 use {
     crate::{
+        DirectionFlags,
         direction::Direction,
         macros::{enum_matcher_array, enum_ordered_array},
     },
     ::core::ops::Neg,
 };
+
+#[must_use]
+const fn map_from_signedaxis_into_direction<const N: usize>(
+    pairs: [(SignedAxis, Direction); N],
+) -> ([SignedAxis; N], [Direction; N]) {
+    let mut from_arr = [pairs[0].0; _];
+    let mut into_arr = [pairs[0].1; _];
+    let mut i = 0;
+
+    while i != N {
+        let (from, to) = pairs[i];
+
+        from_arr[to as usize] = from;
+        into_arr[from as usize] = to;
+        i += 1;
+    }
+
+    (from_arr, into_arr)
+}
 
 enum_ordered_array! {
     /// A simple direction selection enum, designed for matching, selecting, indexing, etc.
@@ -27,7 +47,7 @@ enum_ordered_array! {
 impl SignedAxis {
     enum_matcher_array! {
         /// An array of variants, each corresponding to its own "opposite", or "reverse".
-        pub const VARIANTS_OPPOSITE: Self = {
+        pub const VARIANTS_OPPOSITE = {
             XPos => Self::XNeg,
             YPos => Self::YNeg,
             ZPos => Self::ZNeg,
@@ -48,32 +68,61 @@ impl SignedAxis {
     /// assert_eq!(vertical.reverse(), SignedAxis::ZPos);
     /// ```
     #[inline(always)]
+    #[must_use]
     pub const fn reverse(self) -> Self {
         Self::VARIANTS_OPPOSITE[self as usize]
     }
 
-    const fn map_from_into<const N: usize>(
-        pairs: [(Self, Direction); N],
-    ) -> ([Self; N], [Direction; N]) {
-        let mut from_arr = [pairs[0].0; _];
-        let mut into_arr = [pairs[0].1; _];
-        let mut i = 0;
-
-        while i != N {
-            let (from, to) = pairs[i];
-
-            from_arr[to as usize] = from;
-            into_arr[from as usize] = to;
-            i += 1;
-        }
-
-        (from_arr, into_arr)
+    /// Convert the axis into its unsigned counterpart.
+    /// ```
+    /// use directionlib::{SignedAxis, Axis};
+    ///
+    /// assert_eq!(SignedAxis::XPos.to_unsigned(), Axis::X);
+    /// assert_eq!(SignedAxis::YNeg.to_unsigned(), Axis::Y);
+    /// assert_eq!(SignedAxis::ZNeg.to_unsigned(), Axis::Z);
+    /// ```
+    #[inline(always)]
+    #[must_use]
+    pub const fn to_unsigned(self) -> Axis {
+        Axis::from_repr((self as u8) % 3)
+    }
+    /// Get the absolute value of this axis
+    /// ```
+    /// use directionlib::SignedAxis;
+    ///
+    /// assert_eq!(SignedAxis::XNeg.abs(), SignedAxis::XPos);
+    /// assert_eq!(SignedAxis::YPos.abs(), SignedAxis::YPos);
+    /// assert_eq!(SignedAxis::ZNeg.abs(), SignedAxis::ZPos);
+    /// ```
+    #[inline(always)]
+    #[must_use]
+    pub const fn abs(self) -> Self {
+        self.to_unsigned().cast_signed()
     }
 
-    /// An array of axes corresponding to each direction in a right-handed view
-    /// facing towards -z
+    /// Returns whether this axis is positive or not
+    /// ```
+    /// use directionlib::SignedAxis;
+    ///
+    /// let z = SignedAxis::ZPos;
+    ///
+    /// assert!(z.is_positive());
+    /// assert!(!z.is_negative());
+    /// assert!((z as u8) < (SignedAxis::YNeg as u8));
+    /// assert!((z as u8) < (SignedAxis::ZNeg as u8));
+    /// ```
+    #[inline]
+    pub const fn is_positive(self) -> bool {
+        (self as u8) < (Self::XNeg as u8)
+    }
+    /// The inverse of [`is_positive`](Self::is_positive)
+    #[inline(always)]
+    pub const fn is_negative(self) -> bool {
+        !self.is_positive()
+    }
+
     const RH_VIEW_MAPS_FROM_INTO: ([Self; Self::COUNT], [Direction; Direction::COUNT]) = {
-        Self::map_from_into([
+        map_from_signedaxis_into_direction([
             (Self::XPos, Direction::Right),
             (Self::YPos, Direction::Up),
             (Self::ZPos, Direction::Back),
@@ -82,12 +131,8 @@ impl SignedAxis {
             (Self::ZNeg, Direction::Front),
         ])
     };
-    // const RH_VIEW_MAPS_FROMDIR
-
-    /// An array of axes corresponding to each direction in a left-handed view (OpenGL),
-    /// facing towards +z
     const LH_VIEW_MAPS_FROM_INTO: ([Self; Self::COUNT], [Direction; Direction::COUNT]) = {
-        Self::map_from_into([
+        map_from_signedaxis_into_direction([
             (Self::XPos, Direction::Right),
             (Self::YPos, Direction::Up),
             (Self::ZPos, Direction::Front),
@@ -110,6 +155,7 @@ impl SignedAxis {
     /// assert_eq!(Direction::Back, backwards.to_direction_rh());
     /// ```
     #[inline(always)]
+    #[must_use]
     pub const fn to_direction_rh(self) -> Direction {
         Self::RH_VIEW_MAPS_FROM_INTO.1[self as usize]
     }
@@ -126,6 +172,7 @@ impl SignedAxis {
     /// assert_eq!(SignedAxis::ZNeg, SignedAxis::from_direction_rh(forwards));
     /// ```
     #[inline(always)]
+    #[must_use]
     pub const fn from_direction_rh(value: Direction) -> Self {
         Self::RH_VIEW_MAPS_FROM_INTO.0[value as usize]
     }
@@ -142,6 +189,7 @@ impl SignedAxis {
     /// assert_eq!(Direction::Back, backwards.to_direction_lh());
     /// ```
     #[inline(always)]
+    #[must_use]
     pub const fn to_direction_lh(self) -> Direction {
         Self::LH_VIEW_MAPS_FROM_INTO.1[self as usize]
     }
@@ -158,6 +206,7 @@ impl SignedAxis {
     /// assert_eq!(SignedAxis::ZPos, SignedAxis::from_direction_lh(forwards));
     /// ```
     #[inline(always)]
+    #[must_use]
     pub const fn from_direction_lh(value: Direction) -> Self {
         Self::LH_VIEW_MAPS_FROM_INTO.0[value as usize]
     }
@@ -167,5 +216,50 @@ impl Neg for SignedAxis {
     #[inline(always)]
     fn neg(self) -> Self::Output {
         self.reverse()
+    }
+}
+
+enum_ordered_array! {
+    /// A simple direction selection enum, designed for matching, selecting, indexing, etc.
+    /// For more complex 2D or 3D scenes, consider using a vector instead.
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+    #[cfg_attr(feature = "serde", derive(serde_derive::Serialize, serde_derive::Deserialize))]
+    #[cfg_attr(feature = "defmt", derive(defmt::Format))]
+    #[cfg_attr(feature = "bevy_reflect", derive(bevy_reflect::Reflect))]
+    #[cfg_attr(feature = "bevy_ecs", derive(bevy_ecs::component::Component))]
+    pub enum Axis {
+        X = SignedAxis::XPos as _,
+        Y = SignedAxis::YPos as _,
+        Z = SignedAxis::ZPos as _,
+    }
+}
+impl Axis {
+    /// Cast this axis into a [`SignedAxis`]
+    #[inline(always)]
+    #[must_use]
+    pub const fn cast_signed(self) -> SignedAxis {
+        SignedAxis::VARIANT_ARRAY[self as usize]
+    }
+
+    enum_matcher_array! {
+        /// An array of variants, each corresponding to its own "opposite", or "reverse".
+        const DIRECTION_FLAG_MASKS: DirectionFlags = {
+            X => DirectionFlags::MASK_X,
+            Y => DirectionFlags::MASK_Y,
+            Z => DirectionFlags::MASK_Z,
+        }
+    }
+    /// Get a [`DirectionFlags`] mask pertaining to this axis
+    #[inline(always)]
+    #[must_use]
+    pub const fn to_direction_flags_mask(self) -> DirectionFlags {
+        Self::DIRECTION_FLAG_MASKS[self as usize]
+    }
+}
+impl Neg for Axis {
+    type Output = SignedAxis;
+    #[inline(always)]
+    fn neg(self) -> Self::Output {
+        self.cast_signed().reverse()
     }
 }

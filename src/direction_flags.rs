@@ -1,5 +1,5 @@
 use {
-    crate::direction::Direction,
+    crate::{axis::Axis, direction::Direction},
     ::core::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign},
 };
 
@@ -34,7 +34,8 @@ impl ::core::fmt::Display for DirectionFlags {
 }
 impl DirectionFlags {
     /// Create a new set from a direction
-    #[inline]
+    #[inline(always)]
+    #[must_use]
     pub const fn new(direction: Direction) -> Self {
         Self::from_bits_retain(dir2flag(direction))
     }
@@ -66,6 +67,16 @@ impl DirectionFlags {
             }
         }
     }
+    /// Returns whether the set contains any bits that correspond to the provided [`Axis`]
+    pub const fn intersects_axis(self, axis: Axis) -> bool {
+        self.intersects(axis.to_direction_flags_mask())
+    }
+    /// Returns the bits this set contains that correspond to the provided [`Axis`]
+    #[inline(always)]
+    #[must_use]
+    pub const fn intersection_axis(self, axis: Axis) -> Self {
+        self.intersection(axis.to_direction_flags_mask())
+    }
     pub const fn push_exclusive_axis_direction(&mut self, direction: Direction) {
         *self = self.with_exclusive_axis_direction(direction)
     }
@@ -78,21 +89,25 @@ impl DirectionFlags {
         self.contains_direction(direction) && !self.contains_direction(direction.reverse())
     }
     /// bitwise `|` a direction, adding the direction to the flag set
+    #[inline(always)]
     #[must_use]
     pub const fn union_direction(self, direction: Direction) -> Self {
         self.union(direction.to_flags())
     }
     /// bitwise `&` a direction, adding the direction to the flag set
+    #[inline(always)]
     #[must_use]
     pub const fn intersection_direction(self, direction: Direction) -> Self {
         self.intersection(direction.to_flags())
     }
     /// bitwise `&!` with a direction, removing the direction from the flag set
+    #[inline(always)]
     #[must_use]
     pub const fn difference_direction(self, direction: Direction) -> Self {
         self.difference(direction.to_flags())
     }
     /// bitwise `^` with a single direction
+    #[inline(always)]
     #[must_use]
     pub const fn symmetric_difference_direction(self, direction: Direction) -> Self {
         self.symmetric_difference(direction.to_flags())
