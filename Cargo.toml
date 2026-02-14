@@ -4,3 +4,17 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+bevy_ecs = { version = "0.18", default-features = false, optional = true }
+bevy_reflect = { version = "0.18", default-features = false, optional = true }
+defmt = { version = "1", default-features = false, optional = true }
+num-traits = { version = "0.2", default-features = false, optional = true }
+serde = { version = "1", default-features = false, optional = true }
+serde_derive = { version = "1", default-features = false, optional = true }
+
+[features]
+default = ["serde", "defmt", "bevy_reflect", "bevy_ecs", "num-traits"]
+serde = ["dep:serde", "dep:serde_derive"]
+defmt = ["dep:defmt"]
+bevy_reflect = ["dep:bevy_reflect"]
+bevy_ecs = ["dep:bevy_ecs"]
+num-traits = ["dep:num-traits"]
