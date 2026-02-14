@@ -1,5 +1,8 @@
 use {
-    crate::macros::{enum_matcher_array, enum_ordered_array},
+    crate::{
+        direction_flags::DirectionFlags,
+        macros::{enum_matcher_array, enum_ordered_array},
+    },
     ::core::ops::Neg,
 };
 
@@ -48,6 +51,22 @@ impl Direction {
     #[inline(always)]
     pub const fn reverse(self) -> Self {
         Self::VARIANTS_OPPOSITE[self as usize]
+    }
+    /// Convert the provided direction into a flagset.
+    /// ```
+    /// use directionlib::{Direction, DirectionFlags};
+    ///
+    /// let current = Direction::Left;
+    /// assert_eq!(current.to_flags(), DirectionFlags::LEFT);
+    /// let up = Direction::Up;
+    /// let down = Direction::Down;
+    /// // we also overload the operator
+    /// let all_y = up.to_flags() | down;
+    /// assert_eq!(all_y, DirectionFlags::MASK_Y);
+    /// ```
+    #[inline(always)]
+    pub const fn to_flags(self) -> DirectionFlags {
+        DirectionFlags::new(self)
     }
 }
 impl Neg for Direction {
