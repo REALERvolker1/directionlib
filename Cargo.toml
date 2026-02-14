@@ -43,3 +43,6 @@ glam_libm = ["glam", "glam/libm"]
 glam_nostd-libm = ["glam", "glam/nostd-libm"]
 mint = ["dep:mint"]
 nalgebra = ["dep:nalgebra"]
+
+# [dev-dependencies]
+# glam = { version = "0.32", optional = true, default-features = false, features = "glam_std" }

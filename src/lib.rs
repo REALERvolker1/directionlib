@@ -4,6 +4,7 @@ mod axis;
 mod direction;
 mod direction_flags;
 mod index;
+mod index_impls;
 mod macros;
 
 pub use axis::{Axis, SignedAxis};
