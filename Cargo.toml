@@ -4,17 +4,30 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+arbitrary = { version = "1.4.2", default-features = false, optional = true }
 bevy_ecs = { version = "0.18", default-features = false, optional = true }
 bevy_reflect = { version = "0.18", default-features = false, optional = true }
+bitflags = { version = "2.11.0", default-features = false }
+bytemuck = { version = "1.25.0", default-features = false, optional = true }
 defmt = { version = "1", default-features = false, optional = true }
 num-traits = { version = "0.2", default-features = false, optional = true }
 serde = { version = "1", default-features = false, optional = true }
 serde_derive = { version = "1", default-features = false, optional = true }
 
 [features]
-default = ["serde", "defmt", "bevy_reflect", "bevy_ecs", "num-traits"]
-serde = ["dep:serde", "dep:serde_derive"]
+default = [
+    "serde",
+    "defmt",
+    "bevy_reflect",
+    "bevy_ecs",
+    "num-traits",
+    "bytemuck",
+    "arbitrary",
+]
+serde = ["dep:serde", "dep:serde_derive", "bitflags/serde"]
 defmt = ["dep:defmt"]
 bevy_reflect = ["dep:bevy_reflect"]
 bevy_ecs = ["dep:bevy_ecs"]
 num-traits = ["dep:num-traits"]
+bytemuck = ["dep:bytemuck", "bitflags/bytemuck"]
+arbitrary = ["dep:arbitrary"]
