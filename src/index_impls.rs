@@ -132,9 +132,9 @@ pub mod impl_glam {
     use {
         super::*,
         ::glam::{
-            Affine3, Affine3A, DAffine3, DMat3, DMat4, DVec3, DVec4, Mat3, Mat3A, Mat4, Vec3,
-            Vec3A, Vec4,
+            Affine3A, DAffine3, DMat3, DMat4, DVec3, DVec4, Mat3, Mat3A, Mat4, Vec3, Vec3A, Vec4,
         },
+        // ::glam::Affine3,
     };
 
     macro_rules! impl_glam {
@@ -186,7 +186,7 @@ pub mod impl_glam {
     impl_glam!(@mat DMat3, DVec3);
     impl_glam!(@mat DMat4, DVec4);
 
-    impl_glam!(@affine Affine3, (Vec3, f32));
+    // impl_glam!(@affine Affine3, (Vec3, f32));
     impl_glam!(@affine Affine3A, (Vec3A, f32));
     impl_glam!(@affine DAffine3, (DVec3, f64));
 }
