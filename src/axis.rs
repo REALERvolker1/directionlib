@@ -1,3 +1,6 @@
+//! Axis enums
+
+// SPDX-License-Identifier: LGPL-3.0-only
 use {
     crate::{
         DirectionFlags,

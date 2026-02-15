@@ -1,5 +1,7 @@
 //! A helper library for applications that wish to describe directional behavior
 
+// SPDX-License-Identifier: LGPL-3.0-only
+
 #![no_std]
 #![deny(missing_docs)]
 

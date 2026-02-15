@@ -1,3 +1,6 @@
+//! A structure for bundling axis-specific information
+// SPDX-License-Identifier: LGPL-3.0-only
+
 #[cfg(feature = "arbitrary")]
 use ::arbitrary::Arbitrary;
 

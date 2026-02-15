@@ -1,3 +1,7 @@
+//! The main runtime Direction enum. Note this is subjective, and requires translation to world axes.
+
+// SPDX-License-Identifier: LGPL-3.0-only
+
 use {
     crate::{
         direction_flags::DirectionFlags,

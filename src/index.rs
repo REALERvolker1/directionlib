@@ -1,3 +1,7 @@
+//! Useful traits for structures that can provide different data or behavior depending on axes
+
+// SPDX-License-Identifier: LGPL-3.0-only
+
 use crate::{Axis, SignedAxis};
 
 /// A trait for any object that has inner components corresponding to euclidean 3D axes

@@ -1,3 +1,7 @@
+//! Implementations of our traits
+
+// SPDX-License-Identifier: LGPL-3.0-only
+
 #![allow(unused)]
 
 use crate::index::{AxisIndex, SignedAxisIndex};

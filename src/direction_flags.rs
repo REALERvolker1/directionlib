@@ -1,3 +1,7 @@
+//! A bitflags macro with directions
+
+// SPDX-License-Identifier: LGPL-3.0-only
+
 use {
     crate::{axis::Axis, direction::Direction},
     ::core::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign},

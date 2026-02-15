@@ -1,5 +1,7 @@
 //! Some internal helper macros
 
+// SPDX-License-Identifier: LGPL-3.0-only
+
 macro_rules! enum_matcher_array {
     (
         $( #[$meta:meta] )*
