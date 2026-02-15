@@ -188,7 +188,7 @@ pub struct DirectionFlagsIter {
 impl Iterator for DirectionFlagsIter {
     type Item = Direction;
     fn next(&mut self) -> Option<Self::Item> {
-        self.inner.next().map(DirectionFlags::lowest_flag).flatten()
+        self.inner.next().and_then(DirectionFlags::lowest_flag)
     }
     fn count(self) -> usize
     where

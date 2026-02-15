@@ -321,7 +321,7 @@ impl<T: Copy> AxisIndex for SignedAxisSet<T> {
         self.pos_z
     }
 }
-impl<'a, T> SignedAxisIndex for &'a SignedAxisSet<T> {
+impl<T> SignedAxisIndex for &'_ SignedAxisSet<T> {
     fn axis_neg_x(&self) -> Self::Item {
         &self.neg_x
     }
