@@ -343,7 +343,33 @@ impl<T: Copy> SignedAxisIndex for SignedAxisSet<T> {
         self.neg_z
     }
 }
+
+impl<T> IntoIterator for SignedAxisSet<T> {
+    type IntoIter = SignedAxisSetIter<T>;
+    type Item = T;
+    fn into_iter(self) -> Self::IntoIter {
+        SignedAxisSetIter {
+            idx: const { SignedAxis::VARIANT_ARRAY[0] },
+            inner: self.into_optional(),
+        }
+    }
+}
+
+const MAX_AXIS_IDX: SignedAxis = *SignedAxis::VARIANT_ARRAY.last().unwrap();
+
 pub struct SignedAxisSetIter<T> {
     inner: SignedAxisSet<Option<T>>,
     idx: SignedAxis,
+}
+impl<T> Iterator for SignedAxisSetIter<T> {
+    type Item = T;
+    fn next(&mut self) -> Option<Self::Item> {
+        let idx = self.idx;
+
+        if self.idx != MAX_AXIS_IDX {
+            self.idx = SignedAxis::VARIANT_ARRAY[self.idx as usize + 1];
+        }
+
+        self.inner.take(idx)
+    }
 }

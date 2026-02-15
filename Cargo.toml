@@ -18,18 +18,7 @@ serde = { version = "1", default-features = false, optional = true }
 serde_derive = { version = "1", default-features = false, optional = true }
 
 [features]
-default = [
-    "serde",
-    "defmt",
-    "bevy_reflect",
-    "bevy_ecs",
-    "num-traits",
-    "bytemuck",
-    "arbitrary",
-    "glam_std",
-    "mint",
-    "nalgebra",
-]
+default = []
 serde = ["dep:serde", "dep:serde_derive", "bitflags/serde"]
 defmt = ["dep:defmt"]
 bevy_reflect = ["dep:bevy_reflect"]
