@@ -3,6 +3,7 @@
 mod axis;
 mod direction;
 mod direction_flags;
+mod axis_set;
 mod index;
 mod index_impls;
 mod macros;
