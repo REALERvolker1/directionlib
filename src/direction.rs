@@ -9,18 +9,21 @@ use {
 enum_ordered_array! {
     /// A simple direction selection enum, designed for matching, selecting, indexing, etc.
     /// For more complex 2D or 3D scenes, consider using a vector instead.
-    #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-    #[cfg_attr(feature = "serde", derive(serde_derive::Serialize, serde_derive::Deserialize))]
-    #[cfg_attr(feature = "defmt", derive(defmt::Format))]
-    #[cfg_attr(feature = "bevy_reflect", derive(bevy_reflect::Reflect))]
-    #[cfg_attr(feature = "bevy_ecs", derive(bevy_ecs::component::Component))]
     pub enum Direction {
+        /// The direction usually corresponding to +Y
         Up = 0,
+        /// The direction usually corresponding to +X
         Right = 1,
+        /// The direction usually corresponding to -Z (Right-handed), or +Z (Left-handed)
+        #[doc(alias = "Forward")]
         Front = 2,
 
+        /// The direction usually corresponding to -Y
         Down = 3,
+        /// The direction usually corresponding to -X
         Left = 4,
+        /// The direction usually corresponding to +Z (Right-handed), or -Z (Left-handed)
+        #[doc(alias = "Backward")]
         Back = 5,
     }
 }

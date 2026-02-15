@@ -9,6 +9,7 @@ bevy_ecs = { version = "0.18", default-features = false, optional = true }
 bevy_reflect = { version = "0.18", default-features = false, optional = true }
 bitflags = { version = "2", default-features = false }
 bytemuck = { version = "1", default-features = false, optional = true }
+bytemuck_derive = { version = "1", default-features = false, optional = true }
 defmt = { version = "1", default-features = false, optional = true }
 glam = { version = "0.32", optional = true, default-features = false }
 mint = { version = "0.5", default-features = false, optional = true }
@@ -18,20 +19,46 @@ serde = { version = "1", default-features = false, optional = true }
 serde_derive = { version = "1", default-features = false, optional = true }
 
 [features]
-default = []
+default = [
+    "serde",
+    "defmt",
+    "bevy_reflect",
+    "bevy_ecs",
+    "num-traits",
+    "bytemuck",
+    "arbitrary",
+    "glam",
+    "mint",
+    "nalgebra",
+    "__internal_test_glam_std",
+]
+# Derive serde traits for all supported structures
 serde = ["dep:serde", "dep:serde_derive", "bitflags/serde"]
+# Derive defmt formatting
 defmt = ["dep:defmt"]
+# Derive reflection support
 bevy_reflect = ["dep:bevy_reflect"]
+# Derive bevy Component traits
 bevy_ecs = ["dep:bevy_ecs"]
+# Implement helpful number casting
 num-traits = ["dep:num-traits"]
-bytemuck = ["dep:bytemuck", "bitflags/bytemuck"]
+# Implement bytemuck traits for supported types
+bytemuck = ["dep:bytemuck", "dep:bytemuck_derive", "bitflags/bytemuck"]
+# Add arbitrary crate support
 arbitrary = ["dep:arbitrary"]
+# Implement traits for the `glam` crate types
 glam = ["dep:glam"]
-glam_std = ["glam", "glam/std"]
-glam_libm = ["glam", "glam/libm"]
-glam_nostd-libm = ["glam", "glam/nostd-libm"]
+# Implement traits for the `mint` crate types, this is the most portable math library
 mint = ["dep:mint"]
+# (Attempt to) implement traits for the `nalgebra` crate types. Somewhat limited due to lack of specialization.
 nalgebra = ["dep:nalgebra"]
+
+# Allow testing glam impls, not necessary for downstream crates
+# TODO: Remove these
+__internal_test_glam_std = ["glam", "glam/std"]
+__internal_test_glam_libm = ["glam", "glam/libm"]
+__internal_test_glam_nostd-libm = ["glam", "glam/nostd-libm"]
+
 
 # [dev-dependencies]
 # glam = { version = "0.32", optional = true, default-features = false, features = "glam_std" }

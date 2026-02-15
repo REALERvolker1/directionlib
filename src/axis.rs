@@ -29,18 +29,19 @@ const fn map_from_signedaxis_into_direction<const N: usize>(
 enum_ordered_array! {
     /// A simple direction selection enum, designed for matching, selecting, indexing, etc.
     /// For more complex 2D or 3D scenes, consider using a vector instead.
-    #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-    #[cfg_attr(feature = "serde", derive(serde_derive::Serialize, serde_derive::Deserialize))]
-    #[cfg_attr(feature = "defmt", derive(defmt::Format))]
-    #[cfg_attr(feature = "bevy_reflect", derive(bevy_reflect::Reflect))]
-    #[cfg_attr(feature = "bevy_ecs", derive(bevy_ecs::component::Component))]
     pub enum SignedAxis {
+        /// +X
         XPos = 0,
+        /// +Y
         YPos = 1,
+        /// +Z
         ZPos = 2,
 
+        /// -X
         XNeg = 3,
+        /// -Y
         YNeg = 4,
+        /// -Z
         ZNeg = 5,
     }
 }
@@ -222,14 +223,12 @@ impl Neg for SignedAxis {
 enum_ordered_array! {
     /// A simple direction selection enum, designed for matching, selecting, indexing, etc.
     /// For more complex 2D or 3D scenes, consider using a vector instead.
-    #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-    #[cfg_attr(feature = "serde", derive(serde_derive::Serialize, serde_derive::Deserialize))]
-    #[cfg_attr(feature = "defmt", derive(defmt::Format))]
-    #[cfg_attr(feature = "bevy_reflect", derive(bevy_reflect::Reflect))]
-    #[cfg_attr(feature = "bevy_ecs", derive(bevy_ecs::component::Component))]
     pub enum Axis {
+        /// ±X
         X = SignedAxis::XPos as _,
+        /// ±Y
         Y = SignedAxis::YPos as _,
+        /// ±Z
         Z = SignedAxis::ZPos as _,
     }
 }

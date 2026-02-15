@@ -1,4 +1,7 @@
+//! A helper library for applications that wish to describe directional behavior
+
 #![no_std]
+#![deny(missing_docs)]
 
 mod axis;
 mod axis_set;

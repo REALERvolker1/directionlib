@@ -9,13 +9,20 @@ const fn dir2flag(direction: Direction) -> u8 {
 }
 
 bitflags::bitflags! {
+    /// A bitflag structure that allows multiple directions to be stored in a single integer efficiently.
     #[derive(Debug, Default, Clone, Copy, PartialEq)]
     pub struct DirectionFlags : u8 {
+        /// Directly corresponds to [`Direction::Up`]
         const UP = dir2flag(Direction::Up);
+        /// Directly corresponds to [`Direction::Right`]
         const RIGHT = dir2flag(Direction::Right);
+        /// Directly corresponds to [`Direction::Front`]
         const FRONT = dir2flag(Direction::Front);
+        /// Directly corresponds to [`Direction::Down`]
         const DOWN = dir2flag(Direction::Down);
+        /// Directly corresponds to [`Direction::Left`]
         const LEFT = dir2flag(Direction::Left);
+        /// Directly corresponds to [`Direction::Back`]
         const BACK = dir2flag(Direction::Back);
 
         /// Both left and right together
@@ -77,6 +84,10 @@ impl DirectionFlags {
     pub const fn intersection_axis(self, axis: Axis) -> Self {
         self.intersection(axis.to_direction_flags_mask())
     }
+    /// Add the flag corresponding to the provided direction if the opposite direction is not already
+    /// present.
+    ///
+    /// If the opposite direction flag is already present, this clears both of them, canceling the operation entirely.
     pub const fn push_exclusive_axis_direction(&mut self, direction: Direction) {
         *self = self.with_exclusive_axis_direction(direction)
     }
@@ -181,6 +192,8 @@ impl BitXorAssign<Direction> for DirectionFlags {
     }
 }
 
+/// An iterator that enumerates over all direction flags
+#[cfg_attr(feature = "bytemuck", derive(bytemuck_derive::TransparentWrapper))]
 #[repr(transparent)]
 pub struct DirectionFlagsIter {
     inner: <DirectionFlags as IntoIterator>::IntoIter,

@@ -1,3 +1,5 @@
+//! Some internal helper macros
+
 macro_rules! enum_matcher_array {
     (
         $( #[$meta:meta] )*
@@ -151,6 +153,11 @@ macro_rules! enum_ordered_array {
         }
     ) => {
         $( #[$meta] )*
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+        #[cfg_attr(feature = "serde", derive(serde_derive::Serialize, serde_derive::Deserialize))]
+        #[cfg_attr(feature = "defmt", derive(defmt::Format))]
+        #[cfg_attr(feature = "bevy_reflect", derive(bevy_reflect::Reflect))]
+        #[cfg_attr(feature = "bevy_ecs", derive(bevy_ecs::component::Component))]
         $vis enum $enum {
             $(
                 $( #[$variant_meta] )*
@@ -179,7 +186,7 @@ macro_rules! enum_ordered_array {
             /// All enum variants in order
             pub const VARIANT_NAMES: [&'static str; Self::COUNT] = [$( ::core::stringify!($variant) ),+];
 
-            /// Get the `Direction` corresponding to the input.
+            /// Get the variant corresponding to the input.
             /// # Panics
             /// This function will panic if `n` is out of range.
             #[inline(always)]
@@ -187,7 +194,7 @@ macro_rules! enum_ordered_array {
             pub const fn from_repr(n: u8) -> Self {
                 Self::VARIANT_ARRAY[n as usize]
             }
-            /// Get the `Direction` corresponding to the input, or `None` if the input is out of range.
+            /// Get the variant corresponding to the input, or `None` if the input is out of range.
             #[inline]
             #[must_use]
             pub const fn try_from_repr(n: u8) -> Option<Self> {

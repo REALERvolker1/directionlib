@@ -22,6 +22,10 @@ pub trait AxisIndex {
 }
 /// A trait for any object that has inner components corresponding to euclidean 3D axes,
 /// but whose outputs differ if a negative axis is requested.
+///
+/// # Todo
+/// This seriously needs a refactor when `#![feature(specialization)]` comes to stable,
+/// I hate this API.
 pub trait SignedAxisIndex: AxisIndex {
     /// Get the item corresponding to the +X axis
     #[inline]
