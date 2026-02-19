@@ -58,6 +58,9 @@ glam = ["dep:glam"]
 mint = ["dep:mint"]
 # (Attempt to) implement traits for the `nalgebra` crate types. Somewhat limited due to lack of specialization.
 nalgebra = ["dep:nalgebra"]
+# Enable glam-std. Enable this feature to get rustdoc builds to work. Disable if
+# building for a no-std crate and you can add glam with whatever backend you choose.
+glam_std=["glam", "glam/std"]
 
 [dev-dependencies]
 # TODO: Only enable glam here if it is also enabled above
