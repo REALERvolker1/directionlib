@@ -1,6 +1,6 @@
 [package]
 name = "directionlib"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 authors = ["vlk"]
 description = "A simple direction/axis library providing useful enums, traits and methods"
