@@ -6,6 +6,7 @@ authors = ["vlk"]
 description = "A simple direction/axis library providing useful enums, traits and methods"
 license = "LGPL-3.0-only"
 
+
 [dependencies]
 arbitrary = { version = "1", default-features = false, optional = true }
 bevy_ecs = { version = "0.18", default-features = false, optional = true }
@@ -58,12 +59,6 @@ mint = ["dep:mint"]
 # (Attempt to) implement traits for the `nalgebra` crate types. Somewhat limited due to lack of specialization.
 nalgebra = ["dep:nalgebra"]
 
-# Allow testing glam impls, not necessary for downstream crates
-# TODO: Remove these
-__internal_test_glam_std = ["glam", "glam/std"]
-__internal_test_glam_libm = ["glam", "glam/libm"]
-__internal_test_glam_nostd-libm = ["glam", "glam/nostd-libm"]
-
-
-# [dev-dependencies]
-# glam = { version = "0.32", optional = true, default-features = false, features = "glam_std" }
+[dev-dependencies]
+# TODO: Only enable glam here if it is also enabled above
+glam = { version = "0.30", default-features = false, features = ["std"] }
