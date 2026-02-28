@@ -1,6 +1,6 @@
 [package]
 name = "directionlib"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2024"
 authors = ["vlk"]
 description = "A simple direction/axis library providing useful enums, traits and methods"
@@ -26,22 +26,22 @@ serde = { version = "1", default-features = false, optional = true }
 serde_derive = { version = "1", default-features = false, optional = true }
 
 [features]
-# default = []
-default = [
-    "serde",
-    "defmt",
-    "bevy_reflect",
-    "bevy_ecs",
-    "num-traits",
-    "bytemuck",
-    "arbitrary",
-    "glam",
-    "mint",
-    "nalgebra",
-    "glam_std",
-    "bevy-inspector-egui",
-    "bevy_transform",
-]
+default = []
+# default = [
+#     "serde",
+#     "defmt",
+#     "bevy_reflect",
+#     "bevy_ecs",
+#     "num-traits",
+#     "bytemuck",
+#     "arbitrary",
+#     "glam",
+#     "mint",
+#     "nalgebra",
+#     "glam_std",
+#     "bevy-inspector-egui",
+#     "bevy_transform",
+# ]
 
 # Derive serde traits for all supported structures
 serde = ["dep:serde", "dep:serde_derive", "bitflags/serde"]
