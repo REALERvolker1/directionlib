@@ -9,9 +9,11 @@ license = "LGPL-3.0-only"
 
 [dependencies]
 arbitrary = { version = "1", default-features = false, optional = true }
-bevy-inspector-egui = { version = "0.36.0", optional = true, default-features = false }
+bevy-inspector-egui = { version = "0.36", optional = true, default-features = false }
 bevy_ecs = { version = "0.18", default-features = false, optional = true }
+bevy_math = { version = "0.18.0", default-features = false, optional = true }
 bevy_reflect = { version = "0.18", default-features = false, optional = true }
+bevy_transform = { version = "0.18", default-features = false, optional = true }
 bitflags = { version = "2", default-features = false }
 bytemuck = { version = "1", default-features = false, optional = true }
 bytemuck_derive = { version = "1", default-features = false, optional = true }
@@ -38,6 +40,7 @@ default = [
     "nalgebra",
     "glam_std",
     "bevy-inspector-egui",
+    "bevy_transform",
 ]
 
 # Derive serde traits for all supported structures
@@ -64,6 +67,7 @@ nalgebra = ["dep:nalgebra"]
 # building for a no-std crate and you can add glam with whatever backend you choose.
 glam_std = ["glam", "glam/std"]
 bevy-inspector-egui = ["dep:bevy-inspector-egui"]
+bevy_transform = ["dep:bevy_transform", "dep:bevy_math", "glam"]
 
 [dev-dependencies]
 # TODO: Only enable glam here if it is also enabled above

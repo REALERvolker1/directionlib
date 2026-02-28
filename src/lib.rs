@@ -21,4 +21,4 @@ pub use axis::{Axis, SignedAxis};
 pub use axis_set::{SignedAxisSet, SignedAxisSetIter};
 pub use direction::Direction;
 pub use direction_flags::{DirectionFlags, DirectionFlagsIter};
-pub use index::{AxisIndex, SignedAxisIndex};
+pub use index::{AxisIndex, CombinedDirectionIndex, DirectionIndex, SignedAxisIndex};

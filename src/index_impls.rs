@@ -190,3 +190,83 @@ pub mod impl_glam {
     impl_glam!(@affine Affine3A, (Vec3A, f32));
     impl_glam!(@affine DAffine3, (DVec3, f64));
 }
+
+#[cfg(feature = "bevy_transform")]
+pub mod impl_bevy_transform {
+    use {
+        super::*,
+        crate::{CombinedDirectionIndex, DirectionIndex},
+        ::bevy_math::Dir3,
+        ::bevy_transform::components::{GlobalTransform, Transform},
+        ::glam::Vec3A,
+    };
+
+    impl AxisIndex for Transform {
+        type Item = Dir3;
+        fn axis_x(&self) -> Self::Item {
+            self.local_x()
+        }
+        fn axis_y(&self) -> Self::Item {
+            self.local_y()
+        }
+        fn axis_z(&self) -> Self::Item {
+            self.local_z()
+        }
+    }
+    impl SignedAxisIndex for Transform {
+        fn axis_neg_x(&self) -> Self::Item {
+            -self.local_x()
+        }
+        fn axis_neg_y(&self) -> Self::Item {
+            -self.local_y()
+        }
+        fn axis_neg_z(&self) -> Self::Item {
+            -self.local_z()
+        }
+    }
+    impl DirectionIndex for Transform {
+        type Item = <Self as AxisIndex>::Item;
+        fn direction_back(&self) -> Self::Item {
+            self.back()
+        }
+        fn direction_down(&self) -> Self::Item {
+            self.down()
+        }
+        fn direction_front(&self) -> Self::Item {
+            self.forward()
+        }
+        fn direction_left(&self) -> Self::Item {
+            self.left()
+        }
+        fn direction_right(&self) -> Self::Item {
+            self.right()
+        }
+        fn direction_up(&self) -> Self::Item {
+            self.up()
+        }
+    }
+    impl CombinedDirectionIndex for Transform {
+        fn direction_flags(&self, flags: crate::DirectionFlags) -> Self::Item {
+            let x = flags.signum_x_lh();
+            let y = flags.signum_y_lh();
+            let z = flags.signum_z_lh();
+
+            let mut accum = Vec3A::ZERO;
+
+            if x.is_normal() {
+                accum = self.local_x().to_vec3a().mul_add(Vec3A::splat(x), accum);
+            }
+            if y.is_normal() {
+                accum = self.local_y().to_vec3a().mul_add(Vec3A::splat(y), accum);
+            }
+            if z.is_normal() {
+                accum = self.local_z().to_vec3a().mul_add(Vec3A::splat(z), accum);
+            }
+
+            match accum.try_normalize() {
+                Some(n) => Dir3::new_unchecked(n.into()),
+                None => Dir3::X,
+            }
+        }
+    }
+}
