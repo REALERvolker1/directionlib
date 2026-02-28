@@ -5,6 +5,10 @@
 #![no_std]
 #![deny(missing_docs)]
 
+// might as well at that point
+#[cfg(feature = "bevy_reflect")]
+extern crate std;
+
 mod axis;
 mod axis_set;
 mod direction;

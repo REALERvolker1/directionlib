@@ -9,6 +9,7 @@ license = "LGPL-3.0-only"
 
 [dependencies]
 arbitrary = { version = "1", default-features = false, optional = true }
+bevy-inspector-egui = { version = "0.36.0", optional = true, default-features = false }
 bevy_ecs = { version = "0.18", default-features = false, optional = true }
 bevy_reflect = { version = "0.18", default-features = false, optional = true }
 bitflags = { version = "2", default-features = false }
@@ -23,20 +24,21 @@ serde = { version = "1", default-features = false, optional = true }
 serde_derive = { version = "1", default-features = false, optional = true }
 
 [features]
-default = []
-# default = [
-#     "serde",
-#     "defmt",
-#     "bevy_reflect",
-#     "bevy_ecs",
-#     "num-traits",
-#     "bytemuck",
-#     "arbitrary",
-#     "glam",
-#     "mint",
-#     "nalgebra",
-#     "__internal_test_glam_std",
-# ]
+# default = []
+default = [
+    "serde",
+    "defmt",
+    "bevy_reflect",
+    "bevy_ecs",
+    "num-traits",
+    "bytemuck",
+    "arbitrary",
+    "glam",
+    "mint",
+    "nalgebra",
+    "glam_std",
+    "bevy-inspector-egui",
+]
 
 # Derive serde traits for all supported structures
 serde = ["dep:serde", "dep:serde_derive", "bitflags/serde"]
@@ -60,7 +62,8 @@ mint = ["dep:mint"]
 nalgebra = ["dep:nalgebra"]
 # Enable glam-std. Enable this feature to get rustdoc builds to work. Disable if
 # building for a no-std crate and you can add glam with whatever backend you choose.
-glam_std=["glam", "glam/std"]
+glam_std = ["glam", "glam/std"]
+bevy-inspector-egui = ["dep:bevy-inspector-egui"]
 
 [dev-dependencies]
 # TODO: Only enable glam here if it is also enabled above

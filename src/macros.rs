@@ -160,6 +160,10 @@ macro_rules! enum_ordered_array {
         #[cfg_attr(feature = "defmt", derive(defmt::Format))]
         #[cfg_attr(feature = "bevy_reflect", derive(bevy_reflect::Reflect))]
         #[cfg_attr(feature = "bevy_ecs", derive(bevy_ecs::component::Component))]
+        #[cfg_attr(
+            feature = "bevy-inspector-egui",
+            derive(bevy_inspector_egui::InspectorOptions)
+        )]
         $vis enum $enum {
             $(
                 $( #[$variant_meta] )*

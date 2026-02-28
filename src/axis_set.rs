@@ -26,6 +26,10 @@ use {
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[cfg_attr(feature = "bevy_reflect", derive(bevy_reflect::Reflect))]
 #[cfg_attr(feature = "bevy_ecs", derive(bevy_ecs::component::Component))]
+#[cfg_attr(
+    feature = "bevy-inspector-egui",
+    derive(bevy_inspector_egui::InspectorOptions)
+)]
 pub struct SignedAxisSet<T> {
     /// Corresponds to [`SignedAxis::XPos`] or [`Axis::X`](crate::Axis::X)
     pub pos_x: T,

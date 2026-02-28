@@ -222,6 +222,62 @@ impl Neg for SignedAxis {
         self.reverse()
     }
 }
+#[cfg(feature = "glam")]
+mod glam_impls {
+    //! Glam impls
+    use {
+        super::*,
+        ::core::ops::Mul,
+        ::glam::{Vec3, Vec3A},
+    };
+
+    impl SignedAxis {
+        enum_matcher_array! {
+            /// An array of variants, each corresponding to its own "opposite", or "reverse".
+            const SIGNUMS: Vec3 = {
+                XPos => Vec3::X,
+                YPos => Vec3::Y,
+                ZPos => Vec3::Z,
+                XNeg => Vec3::NEG_X,
+                YNeg => Vec3::NEG_Y,
+                ZNeg => Vec3::NEG_Z,
+            }
+        }
+        /// Get a unit vector that corresponds to the axis
+        #[inline(always)]
+        #[must_use]
+        pub const fn signum_vec3(self) -> Vec3 {
+            Self::SIGNUMS[self as usize]
+        }
+        /// Get a unit vector that corresponds to the axis
+        #[inline(always)]
+        #[must_use]
+        pub const fn signum_vec3a(self) -> Vec3A {
+            let sn = Self::SIGNUMS[self as usize];
+            Vec3A::new(sn.x, sn.y, sn.z)
+        }
+    }
+
+    impl Mul<Vec3> for SignedAxis {
+        type Output = Vec3;
+        fn mul(self, mut rhs: Vec3) -> Self::Output {
+            match self {
+                Self::XNeg => rhs.x = -rhs.x,
+                Self::YNeg => rhs.y = -rhs.y,
+                Self::ZNeg => rhs.z = -rhs.z,
+                _ => {}
+            }
+
+            rhs
+        }
+    }
+    impl Mul<SignedAxis> for Vec3 {
+        type Output = Self;
+        fn mul(self, rhs: SignedAxis) -> Self::Output {
+            rhs.mul(self)
+        }
+    }
+}
 
 enum_ordered_array! {
     /// A simple direction selection enum, designed for matching, selecting, indexing, etc.

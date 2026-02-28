@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 
 use {
-    crate::{axis::Axis, direction::Direction},
+    crate::{SignedAxis, axis::Axis, direction::Direction},
     ::core::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign},
 };
 
@@ -15,6 +15,16 @@ const fn dir2flag(direction: Direction) -> u8 {
 bitflags::bitflags! {
     /// A bitflag structure that allows multiple directions to be stored in a single integer efficiently.
     #[derive(Debug, Default, Clone, Copy, PartialEq)]
+    #[cfg_attr(feature = "serde", derive(serde_derive::Serialize, serde_derive::Deserialize))]
+    // #[cfg_attr(feature = "defmt", derive(defmt::Format))]
+    // #[cfg_attr(feature = "bevy_reflect", derive(bevy_reflect::Reflect))]
+    #[cfg_attr(feature = "bevy_ecs", derive(bevy_ecs::component::Component))]
+    #[cfg_attr(
+        feature = "bevy-inspector-egui",
+        derive(bevy_inspector_egui::InspectorOptions)
+    )]
+    #[cfg_attr(feature = "bytemuck", derive(bytemuck::TransparentWrapper, bytemuck::Zeroable, bytemuck::Pod))]
+    #[repr(transparent)]
     pub struct DirectionFlags : u8 {
         /// Directly corresponds to [`Direction::Up`]
         const UP = dir2flag(Direction::Up);
@@ -35,6 +45,9 @@ bitflags::bitflags! {
         const MASK_Y = Self::UP.union(Self::DOWN).bits();
         /// Both front and back together
         const MASK_Z = Self::FRONT.union(Self::BACK).bits();
+
+        /// All horizontal directions
+        const MASK_XZ = Self::MASK_X.union(Self::MASK_Z).bits();
     }
 }
 impl ::core::fmt::Display for DirectionFlags {
@@ -49,6 +62,24 @@ impl DirectionFlags {
     #[must_use]
     pub const fn new(direction: Direction) -> Self {
         Self::from_bits_retain(dir2flag(direction))
+    }
+    /// Convert from an axis (left-handed coordinate system)
+    #[inline(always)]
+    #[must_use]
+    pub const fn from_signed_axis_lh(axis: SignedAxis) -> Self {
+        Self::new(axis.to_direction_lh())
+    }
+    /// Convert from an axis (right-handed coordinate system)
+    #[inline(always)]
+    #[must_use]
+    pub const fn from_signed_axis_rh(axis: SignedAxis) -> Self {
+        Self::new(axis.to_direction_rh())
+    }
+    /// Convert from an axis to the corresponding direction flags mask.
+    #[inline(always)]
+    #[must_use]
+    pub const fn from_axis_mask(axis: Axis) -> Self {
+        axis.to_direction_flags_mask()
     }
     /// add a direction to this set, if and only if its reverse is not in the set.
     ///
@@ -79,6 +110,8 @@ impl DirectionFlags {
         }
     }
     /// Returns whether the set contains any bits that correspond to the provided [`Axis`]
+    #[inline(always)]
+    #[must_use]
     pub const fn intersects_axis(self, axis: Axis) -> bool {
         self.intersects(axis.to_direction_flags_mask())
     }
@@ -155,6 +188,49 @@ impl DirectionFlags {
         debug_assert!(!self.contains_unknown_bits_const());
         Direction::try_from_repr(self.bits().trailing_zeros() as _)
     }
+
+    /// Get the sign of the local X axis
+    pub const fn signum_x_rh(self) -> f32 {
+        match self.intersection_axis(Axis::X) {
+            Self::LEFT => -1.,
+            Self::RIGHT => 1.,
+            _ => 0.,
+        }
+    }
+    /// Get the sign of the local X axis
+    #[inline(always)]
+    pub const fn signum_x_lh(self) -> f32 {
+        self.signum_x_rh()
+    }
+    /// Get the sign of the local Y axis
+    pub const fn signum_y_rh(self) -> f32 {
+        match self.intersection_axis(Axis::Y) {
+            Self::DOWN => -1.,
+            Self::UP => 1.,
+            _ => 0.,
+        }
+    }
+    /// Get the sign of the local Y axis
+    #[inline(always)]
+    pub const fn signum_y_lh(self) -> f32 {
+        self.signum_y_rh()
+    }
+    /// Get the sign of the local Z axis
+    pub const fn signum_z_rh(self) -> f32 {
+        match self.intersection_axis(Axis::Z) {
+            Self::FRONT => -1.,
+            Self::BACK => 1.,
+            _ => 0.,
+        }
+    }
+    /// Get the sign of the local Z axis
+    pub const fn signum_z_lh(self) -> f32 {
+        match self.intersection_axis(Axis::Z) {
+            Self::BACK => -1.,
+            Self::FRONT => 1.,
+            _ => 0.,
+        }
+    }
 }
 impl From<Direction> for DirectionFlags {
     #[inline(always)]
@@ -196,6 +272,15 @@ impl BitXorAssign<Direction> for DirectionFlags {
     }
 }
 
+#[cfg(feature = "arbitrary")]
+impl arbitrary::Arbitrary<'_> for DirectionFlags {
+    fn arbitrary(u: &mut arbitrary::Unstructured<'_>) -> arbitrary::Result<Self> {
+        Ok(Self::from_bits_truncate(arbitrary::Arbitrary::arbitrary(
+            u,
+        )?))
+    }
+}
+
 /// An iterator that enumerates over all direction flags
 #[cfg_attr(feature = "bytemuck", derive(bytemuck_derive::TransparentWrapper))]
 #[repr(transparent)]
@@ -212,5 +297,185 @@ impl Iterator for DirectionFlagsIter {
         Self: Sized,
     {
         self.inner.count()
+    }
+}
+
+#[cfg(feature = "glam")]
+mod glam_impls {
+    //! Internal utils for glam
+
+    use {
+        super::*,
+        ::glam::{Vec3, Vec3A},
+    };
+
+    impl DirectionFlags {
+        /// Returns a vector that contains the signs of each axis in the flag set.
+        ///
+        /// The vector returned is NOT normalized
+        #[must_use]
+        pub const fn signum_vec3_lh(self) -> Vec3 {
+            Vec3 {
+                x: self.signum_x_lh(),
+                y: self.signum_y_lh(),
+                z: self.signum_z_lh(),
+            }
+        }
+        /// Returns a vector that contains the signs of each axis in the flag set.
+        ///
+        /// The vector returned is NOT normalized
+        #[must_use]
+        pub const fn signum_vec3_rh(self) -> Vec3 {
+            Vec3 {
+                x: self.signum_x_rh(),
+                y: self.signum_y_rh(),
+                z: self.signum_z_rh(),
+            }
+        }
+        /// Returns a vector that contains the signs of each axis in the flag set.
+        ///
+        /// The vector returned is NOT normalized
+        #[must_use]
+        pub const fn signum_vec3a_lh(self) -> Vec3A {
+            Vec3A::new(self.signum_x_lh(), self.signum_y_lh(), self.signum_z_lh())
+        }
+        /// Returns a vector that contains the signs of each axis in the flag set.
+        ///
+        /// The vector returned is NOT normalized
+        #[must_use]
+        pub const fn signum_vec3a_rh(self) -> Vec3A {
+            Vec3A::new(self.signum_x_rh(), self.signum_y_rh(), self.signum_z_rh())
+        }
+    }
+}
+#[cfg(feature = "bevy_reflect")]
+impl bevy_reflect::TupleStruct for DirectionFlags {
+    fn field(&self, index: usize) -> Option<&dyn bevy_reflect::PartialReflect> {
+        if index == 0 { Some(&self.0.0) } else { None }
+    }
+    fn field_len(&self) -> usize {
+        1
+    }
+    fn field_mut(&mut self, index: usize) -> Option<&mut dyn bevy_reflect::PartialReflect> {
+        if index == 0 {
+            Some(&mut self.0.0)
+        } else {
+            None
+        }
+    }
+    fn iter_fields(&self) -> bevy_reflect::TupleStructFieldIter<'_> {
+        bevy_reflect::TupleStructFieldIter::new(self)
+    }
+}
+#[cfg(feature = "bevy_reflect")]
+impl bevy_reflect::PartialReflect for DirectionFlags {
+    fn get_represented_type_info(&self) -> Option<&'static bevy_reflect::TypeInfo> {
+        Some(<Self as bevy_reflect::Typed>::type_info())
+    }
+    fn as_partial_reflect(&self) -> &dyn bevy_reflect::PartialReflect {
+        self
+    }
+    fn as_partial_reflect_mut(&mut self) -> &mut dyn bevy_reflect::PartialReflect {
+        self
+    }
+    fn try_as_reflect(&self) -> Option<&dyn bevy_reflect::Reflect> {
+        Some(self)
+    }
+    fn try_as_reflect_mut(&mut self) -> Option<&mut dyn bevy_reflect::Reflect> {
+        Some(self)
+    }
+    fn try_into_reflect(
+        self: std::prelude::v1::Box<Self>,
+    ) -> Result<
+        std::prelude::v1::Box<dyn bevy_reflect::Reflect>,
+        std::prelude::v1::Box<dyn bevy_reflect::PartialReflect>,
+    > {
+        Ok(self)
+    }
+    fn reflect_mut(&mut self) -> bevy_reflect::ReflectMut<'_> {
+        bevy_reflect::ReflectMut::TupleStruct(self)
+    }
+    fn into_partial_reflect(
+        self: std::prelude::v1::Box<Self>,
+    ) -> std::prelude::v1::Box<dyn bevy_reflect::PartialReflect> {
+        self
+    }
+    fn try_apply(
+        &mut self,
+        value: &dyn bevy_reflect::PartialReflect,
+    ) -> Result<(), bevy_reflect::ApplyError> {
+        *self =
+            *value
+                .try_downcast_ref()
+                .ok_or_else(|| bevy_reflect::ApplyError::MismatchedTypes {
+                    from_type: value.reflect_type_path().into(),
+                    to_type: <Self as bevy_reflect::TypePath>::type_path().into(),
+                })?;
+        Ok(())
+    }
+    fn reflect_ref(&self) -> bevy_reflect::ReflectRef<'_> {
+        bevy_reflect::ReflectRef::TupleStruct(self)
+    }
+    fn reflect_owned(self: std::prelude::v1::Box<Self>) -> bevy_reflect::ReflectOwned {
+        bevy_reflect::ReflectOwned::TupleStruct(self)
+    }
+}
+
+#[cfg(feature = "bevy_reflect")]
+impl bevy_reflect::Typed for DirectionFlags {
+    fn type_info() -> &'static bevy_reflect::TypeInfo {
+        use {::bevy_reflect::TypeInfo, ::std::sync::LazyLock};
+
+        static CELL: LazyLock<TypeInfo> = LazyLock::new(|| {
+            TypeInfo::TupleStruct(bevy_reflect::TupleStructInfo::new::<DirectionFlags>(&[
+                bevy_reflect::UnnamedField::new::<DirectionFlags>(0),
+            ]))
+        });
+
+        &CELL
+    }
+}
+#[cfg(feature = "bevy_reflect")]
+impl bevy_reflect::TypePath for DirectionFlags {
+    fn crate_name() -> Option<&'static str> {
+        Some(env!("CARGO_PKG_NAME"))
+    }
+    fn module_path() -> Option<&'static str> {
+        Some(module_path!())
+    }
+    fn short_type_path() -> &'static str {
+        "DirectionFlags"
+    }
+    fn type_path() -> &'static str {
+        concat!(module_path!(), "::", "DirectionFlags")
+    }
+}
+
+#[cfg(feature = "bevy_reflect")]
+impl bevy_reflect::Reflect for DirectionFlags {
+    fn as_any(&self) -> &dyn core::any::Any {
+        self
+    }
+    fn as_any_mut(&mut self) -> &mut dyn core::any::Any {
+        self
+    }
+    fn as_reflect(&self) -> &dyn bevy_reflect::Reflect {
+        self
+    }
+    fn as_reflect_mut(&mut self) -> &mut dyn bevy_reflect::Reflect {
+        self
+    }
+    fn into_any(self: std::boxed::Box<Self>) -> std::boxed::Box<dyn core::any::Any> {
+        self
+    }
+    fn into_reflect(self: std::boxed::Box<Self>) -> std::boxed::Box<dyn bevy_reflect::Reflect> {
+        self
+    }
+    fn set(
+        &mut self,
+        value: std::boxed::Box<dyn bevy_reflect::Reflect>,
+    ) -> Result<(), std::boxed::Box<dyn bevy_reflect::Reflect>> {
+        *self = *value.downcast::<Self>()?;
+        Ok(())
     }
 }
